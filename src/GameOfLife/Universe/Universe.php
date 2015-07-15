@@ -5,76 +5,63 @@
 
 namespace GameOfLife\Universe {
 
-    class Universe
+    use GameOfLife\Cell\CellDefinition;
+    use GameOfLife\Transitioner\TransitionerInterface;
+
+    class Universe implements \ArrayAccess, \Countable
     {
-        const CELL_ALIVE = 1;
-        const CELL_DEAD = 0;
-
         private $universe;
+        private $transitioner;
 
-        public function __construct($width, $height, $seed)
+        public function __construct($rows, $columns, $seed, TransitionerInterface $transitioner)
         {
-            $emptyUniverse = array_fill(0, $width, array_fill(0, $height, self::CELL_DEAD));
+            $emptyUniverse = array_fill(0, $rows, array_fill(0, $columns, CellDefinition::CELL_DEAD));
             $this->universe = array_merge_recursive($emptyUniverse, $seed);
-        }
 
-        private function neighbourCells($x, $y)
-        {
-            $result = [];
-            for($wIndex=$x-1; $wIndex<=$x+1; $wIndex++)
-            {
-                for($hIndex=$y-1; $hIndex<=$y+1; $hIndex++)
-                {
-                    if($wIndex == $x && $hIndex == $y) {
-                        continue;
-                    }
-
-                    $result[] = [$wIndex, $hIndex];
-                }
-            }
-
-            return $result;
-        }
-
-        private function aliveCells($neighbours)
-        {
-
-            return array_filter($neighbours, function($cell) {
-                list($x, $y) = $cell;
-
-                return $this->universe[$x][$y] == self::CELL_ALIVE;
-            });
-        }
-
-        private function transition($x, $y)
-        {
-            $neighbours = $this->neighbourCells($x, $y);
-            $aliveNeighbours = $this->aliveCells($neighbours);
-
-            switch(true) {
-                case $this->cellWillComeToLife($aliveNeighbours):
-                case $this->cellKeepsOnLiving($x, $y, $aliveNeighbours):
-                    return self::CELL_ALIVE;
-                    break;
-                default:
-                    return self::CELL_DEAD;
-                    break;
-            }
-        }
-
-        private function cellWillComeToLife($neighbours)
-        {
-            return count($neighbours) == 3;
-        }
-
-        private function cellKeepsOnLiving($x, $y, $neighbours)
-        {
-            return ($this->universe[$x][$y] == self::CELL_ALIVE && count($neighbours) == 2);
+            $this->transitioner = $transitioner;
         }
 
         public function tick()
         {
+            $this->transitioner->setUniverse($this);
 
+            $newUniverse = [];
+            foreach($this->universe as $row => $columns) {
+                foreach($columns as $column => $cell) {
+                    $newUniverse[$row][$column] = $this->transitioner->transition($row, $column);
+                }
+            }
+
+            $this->universe = $newUniverse;
+        }
+
+        public function offsetSet($offset, $value)
+        {
+            if (is_null($offset)) {
+                $this->universe[] = $value;
+            } else {
+                $this->universe[$offset] = $value;
+            }
+        }
+
+        public function offsetExists($offset)
+        {
+            return isset($this->universe[$offset]);
+        }
+
+        public function offsetUnset($offset)
+        {
+            unset($this->universe[$offset]);
+        }
+
+        public function offsetGet($offset)
+        {
+            return isset($this->universe[$offset]) ? $this->universe[$offset] : null;
+        }
+
+        public function count()
+        {
+            return count($this->universe);
         }
     }
 }

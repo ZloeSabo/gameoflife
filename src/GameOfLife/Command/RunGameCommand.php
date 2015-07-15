@@ -5,7 +5,10 @@
 
 namespace GameOfLife\Command {
 
+    use GameOfLife\Transitioner\SimpleTransitioner;
+    use GameOfLife\Universe\Universe;
     use Symfony\Component\Console\Command\Command;
+    use Symfony\Component\Console\Helper\Table;
     use Symfony\Component\Console\Input\InputInterface;
     use Symfony\Component\Console\Input\InputOption;
     use Symfony\Component\Console\Output\OutputInterface;
@@ -25,14 +28,14 @@ namespace GameOfLife\Command {
                 )
                 ->addOption(
                     'width',
-                    'w',
+                    null,
                     InputOption::VALUE_OPTIONAL,
                     'Width of the universe',
                     200
                 )
                 ->addOption(
                     'height',
-                    'h',
+                    null,
                     InputOption::VALUE_OPTIONAL,
                     'Height of the universe',
                     100
@@ -42,7 +45,15 @@ namespace GameOfLife\Command {
 
         protected function execute(InputInterface $input, OutputInterface $output)
         {
-            $output->writeln('works');
+            $universe = new Universe(100, 50, [], new SimpleTransitioner());
+            $table = new Table($output);
+
+            while(true) {
+                $universe->tick();
+                $table->setRows();
+                $table->render();
+                sleep(2);
+            }
         }
     }
 }
