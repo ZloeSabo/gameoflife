@@ -8,15 +8,16 @@ namespace GameOfLife\Universe {
     use GameOfLife\Cell\CellDefinition;
     use GameOfLife\Transitioner\TransitionerInterface;
 
-    class Universe implements \ArrayAccess, \Countable
+    class Universe implements \ArrayAccess, \Countable, \Iterator
     {
         private $universe;
         private $transitioner;
+        private $position = 0;
 
         public function __construct($rows, $columns, $seed, TransitionerInterface $transitioner)
         {
             $emptyUniverse = array_fill(0, $rows, array_fill(0, $columns, CellDefinition::CELL_DEAD));
-            $this->universe = array_merge_recursive($emptyUniverse, $seed);
+            $this->universe = array_replace_recursive($emptyUniverse, $seed);
 
             $this->transitioner = $transitioner;
         }
@@ -62,6 +63,26 @@ namespace GameOfLife\Universe {
         public function count()
         {
             return count($this->universe);
+        }
+
+        function rewind() {
+            $this->position = 0;
+        }
+
+        function current() {
+            return $this->universe[$this->position];
+        }
+
+        function key() {
+            return $this->position;
+        }
+
+        function next() {
+            ++$this->position;
+        }
+
+        function valid() {
+            return isset($this->universe[$this->position]);
         }
     }
 }

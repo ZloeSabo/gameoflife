@@ -43,8 +43,10 @@ namespace GameOfLife\Transitioner {
 
         protected function ensureValidIndex($index, $totalCount)
         {
-            return $index >= $totalCount-1 ? 0
-                : ($index < 0 ? $totalCount-1
+            return $index > $totalCount-1 ?
+                0
+                : ($index < 0 ?
+                    $totalCount-1
                     : $index)
             ;
         }
