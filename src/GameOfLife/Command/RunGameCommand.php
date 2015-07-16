@@ -26,12 +26,6 @@ namespace GameOfLife\Command {
                 ->setName('gameoflife:run')
                 ->setDescription('Run game of life')
                 ->addOption(
-                    'iterations',
-                    'i',
-                    InputOption::VALUE_OPTIONAL,
-                    'Number of iterations to run'
-                )
-                ->addOption(
                     'columns',
                     'c',
                     InputOption::VALUE_OPTIONAL,
