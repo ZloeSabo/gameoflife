@@ -14,3 +14,7 @@
     php run.php [-c|--columns [COLUMNS]] [-r|--rows [ROWS]] [--] <seed>
     
 The only required parameter is file containing seed.
+
+### Tests
+
+Run phpunit in root of project
